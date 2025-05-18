@@ -268,12 +268,30 @@ public class NPCController : MonoBehaviour
     
     private GameObject FindNearestFoodSource()
     {
-        return null;
+        FoodSource[] foodSources = FindObjectsOfType<FoodSource>();
+        
+        float closestDistance = float.MaxValue;
+        GameObject closestFood = null;
+        
+        foreach (FoodSource food in foodSources)
+        {
+            float distance = Vector3.Distance(transform.position, food.transform.position);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestFood = food.gameObject;
+            }
+        }
+        
+        return closestFood;
     }
     
     private bool IsEnemy(GameObject other)
     {
-        return false;
+        Faction myFaction = FactionManager.Instance.GetEntityFaction(gameObject);
+        Faction otherFaction = FactionManager.Instance.GetEntityFaction(other);
+        
+        return FactionManager.Instance.AreFactionsHostile(myFaction, otherFaction);
     }
     
     private bool ShouldFlee()

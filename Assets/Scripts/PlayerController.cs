@@ -8,10 +8,19 @@ public class PlayerController : MonoBehaviour
     private CharacterController characterController;
     private Transform cameraTransform;
     
+    private float horizontalInput;
+    private float verticalInput;
+    
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
         cameraTransform = Camera.main.transform;
+    }
+    
+    public void SetMovementInput(float horizontal, float vertical)
+    {
+        horizontalInput = horizontal;
+        verticalInput = vertical;
     }
     
     private void Update()
@@ -22,10 +31,7 @@ public class PlayerController : MonoBehaviour
     
     private void HandleMovement()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        
-        Vector3 movement = new Vector3(horizontal, 0f, vertical).normalized;
+        Vector3 movement = new Vector3(horizontalInput, 0f, verticalInput).normalized;
         
         Vector3 cameraForward = Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up).normalized;
         Vector3 cameraRight = Vector3.Cross(Vector3.up, cameraForward).normalized;
@@ -40,10 +46,7 @@ public class PlayerController : MonoBehaviour
     
     private void HandleRotation()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        
-        Vector3 movement = new Vector3(horizontal, 0f, vertical).normalized;
+        Vector3 movement = new Vector3(horizontalInput, 0f, verticalInput).normalized;
         
         if (movement.magnitude > 0.1f)
         {
