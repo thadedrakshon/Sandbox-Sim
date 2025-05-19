@@ -1,0 +1,19 @@
+{
+  "name": "com.unity.sandbox-sim",
+  "version": "1.0.0",
+  "displayName": "Sandbox Sim",
+  "description": "Kenshi-style sandbox simulation game",
+  "unity": "2022.3",
+  "dependencies": {
+    "com.unity.ugui": "1.0.0"
+  },
+  "keywords": [
+    "sandbox",
+    "simulation",
+    "game"
+  ],
+  "author": {
+    "name": "Neal Johnson",
+    "email": "nealalbrechtjohnson@gmail.com"
+  }
+}
