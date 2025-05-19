@@ -105,7 +105,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3456789012}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9876abcd9876abcd9876abcd9876abcd, type: 3}
+  m_Script: {fileID: 11500000, guid: 66f0f1ebbd503e24c983789946ee300e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   foodAmount: 50

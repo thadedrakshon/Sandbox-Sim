@@ -98,6 +98,13 @@ public class MapGenerator : MonoBehaviour
         }
         
         TerrainData terrainData = terrain.terrainData;
+        if (terrainData == null)
+        {
+            terrainData = new TerrainData();
+            terrain.terrainData = terrainData;
+            Debug.Log("Created new TerrainData for terrain");
+        }
+        
         terrainData.heightmapResolution = mapWidth + 1;
         terrainData.size = new Vector3(mapWidth, heightMultiplier, mapHeight);
         
