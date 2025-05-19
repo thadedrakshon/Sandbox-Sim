@@ -112,7 +112,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1234567890}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1234abcd1234abcd1234abcd1234abcd, type: 3}
+  m_Script: {fileID: 11500000, guid: 780709d2e43dd1a40896d4e5998fd209, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
@@ -126,7 +126,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1234567890}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abcd1234abcd1234abcd1234abcd1234, type: 3}
+  m_Script: {fileID: 11500000, guid: 8fe9574a40dfc4640abb8e0a4f9f2715, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &1234567897
@@ -138,7 +138,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1234567890}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abcdef1234567890abcdef1234567890, type: 3}
+  m_Script: {fileID: 11500000, guid: d339dd329dd220b4ebeb7ee0606b701f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100

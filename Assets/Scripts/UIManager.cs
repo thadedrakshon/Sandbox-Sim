@@ -7,6 +7,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Slider healthSlider;
     [SerializeField] private Text factionText;
     
+    [Header("Controls UI")]
+    [SerializeField] private GameObject controlsPanel;
+    [SerializeField] private Text controlsText;
+    
     [Header("Game State")]
     [SerializeField] private Text gameStateText;
     
@@ -29,6 +33,16 @@ public class UIManager : MonoBehaviour
         }
         
         UpdateFactionUI();
+        
+        if (controlsText != null)
+        {
+            controlsText.text = 
+                "Controls:\n\n" +
+                "WASD / Arrows - Move\n" +
+                "Mouse - Look around\n" +
+                "Left Click - Attack\n" +
+                "B - Toggle building mode";
+        }
     }
     
     private void UpdateHealthUI(float currentHealth)
