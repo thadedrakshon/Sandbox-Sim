@@ -9,10 +9,12 @@ public class Health : MonoBehaviour
     public UnityEvent<int> OnDamaged;
     public UnityEvent<int> OnHealed;
     public UnityEvent OnDeath;
+    public UnityEvent<float> OnHealthChanged;
     
     private void Awake()
     {
         currentHealth = maxHealth;
+        OnHealthChanged?.Invoke(currentHealth);
     }
     
     public void TakeDamage(int amount)
@@ -22,6 +24,7 @@ public class Health : MonoBehaviour
             
         currentHealth -= amount;
         OnDamaged?.Invoke(amount);
+        OnHealthChanged?.Invoke(currentHealth);
         
         if (currentHealth <= 0)
         {
@@ -38,6 +41,7 @@ public class Health : MonoBehaviour
         int healAmount = Mathf.Min(amount, maxHealth - currentHealth);
         currentHealth += healAmount;
         OnHealed?.Invoke(healAmount);
+        OnHealthChanged?.Invoke(currentHealth);
     }
     
     private void Die()
@@ -50,5 +54,15 @@ public class Health : MonoBehaviour
     public float GetHealthPercentage()
     {
         return (float)currentHealth / maxHealth;
+    }
+    
+    public int GetMaxHealth()
+    {
+        return maxHealth;
+    }
+    
+    public int GetCurrentHealth()
+    {
+        return currentHealth;
     }
 }

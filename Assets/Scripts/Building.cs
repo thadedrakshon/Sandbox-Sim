@@ -29,6 +29,9 @@ public class Building : MonoBehaviour
     
     public void TakeDamage(int amount)
     {
+        if (!isConstructed)
+            return;
+            
         healthPoints -= amount;
         
         if (healthPoints <= 0)
