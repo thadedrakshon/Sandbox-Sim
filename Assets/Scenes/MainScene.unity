@@ -309,7 +309,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1234567890123456789012345678901234567890, type: 3}
+  m_Script: {fileID: 11500000, guid: 1842e5aa10e655e4fbed75816e3de509, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
@@ -355,12 +355,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1234567890}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9876543210987654321098765432109876543210, type: 3}
+  m_Script: {fileID: 11500000, guid: 1a6e516a502830146a2a291830ef6482, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 1234567890, guid: 1234567890123456789012345678901234567890, type: 3}
-  npcPrefab: {fileID: 2345678901, guid: 2345678901234567890123456789012345678901, type: 3}
-  foodSourcePrefab: {fileID: 3456789012, guid: 3456789012345678901234567890123456789012, type: 3}
+  playerPrefab: {fileID: 1234567890, guid: 2741803ba96009043bbae5c10164c981, type: 3}
+  npcPrefab: {fileID: 2345678901, guid: bf58523dfdc02614f830e68fdfddf077, type: 3}
+  foodSourcePrefab: {fileID: 3456789012, guid: d487a8c7c7b829044aaf0b214c7b0706, type: 3}
   foodSourceCount: 10
   foodSourceSpawnRadius: 50
   playerSpawnPoint: {fileID: 0}
@@ -439,7 +439,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2345678901}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8765432109876543210987654321098765432109, type: 3}
+  m_Script: {fileID: 11500000, guid: 77677302ee7898041876230fa6fa835e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   mapWidth: 256
