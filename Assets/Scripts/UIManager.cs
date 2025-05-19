@@ -1,15 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class UIManager : MonoBehaviour
 {
     [Header("Player UI")]
     [SerializeField] private Slider healthSlider;
-    [SerializeField] private TextMeshProUGUI factionText;
+    [SerializeField] private Text factionText;
     
     [Header("Game State")]
-    [SerializeField] private TextMeshProUGUI gameStateText;
+    [SerializeField] private Text gameStateText;
     
     private Health playerHealth;
     
