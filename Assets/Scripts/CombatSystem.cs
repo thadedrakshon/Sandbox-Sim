@@ -10,6 +10,14 @@ public class CombatSystem : MonoBehaviour
     
     private float lastAttackTime;
     
+    private void Awake()
+    {
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+    }
+    
     public void Attack()
     {
         if (Time.time < lastAttackTime + attackCooldown)
