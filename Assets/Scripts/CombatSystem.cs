@@ -6,7 +6,7 @@ public class CombatSystem : MonoBehaviour
     [SerializeField] private float attackCooldown = 1f;
     [SerializeField] private int attackDamage = 10;
     [SerializeField] private LayerMask enemyLayers;
-    [SerializeField] private Animator animator;
+    [SerializeField] public Animator animator;
     
     private float lastAttackTime;
     
