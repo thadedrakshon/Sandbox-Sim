@@ -499,9 +499,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1842e5aa10e655e4fbed75816e3de509, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 0}
+  target: {fileID: 1234567891, guid: 2741803ba96009043bbae5c10164c981, type: 3}
   smoothSpeed: 0.125
   offset: {x: 0, y: 10, z: -10}
+  rotationSpeed: 100
+  minZoom: 5
+  maxZoom: 20
+  zoomSpeed: 2
+  initialZoom: 10
 --- !u!1 &1234567890
 GameObject:
   m_ObjectHideFlags: 0

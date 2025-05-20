@@ -6,6 +6,7 @@ public class CombatSystem : MonoBehaviour
     [SerializeField] private float attackCooldown = 1f;
     [SerializeField] private int attackDamage = 10;
     [SerializeField] private LayerMask enemyLayers;
+    [SerializeField] private Animator animator;
     
     private float lastAttackTime;
     
@@ -15,6 +16,12 @@ public class CombatSystem : MonoBehaviour
             return;
             
         lastAttackTime = Time.time;
+        
+        // Trigger attack animation
+        if (animator != null)
+        {
+            animator.SetTrigger("Attack");
+        }
         
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, attackRange, enemyLayers);
         
