@@ -96,13 +96,17 @@ public class MapGenerator : MonoBehaviour
             Debug.LogError("No terrain assigned to MapGenerator");
             return;
         }
+        if (heightCurve == null)
+        {
+            Debug.LogError("No heightCurve assigned to MapGenerator");
+            return;
+        }
         
         TerrainData terrainData = terrain.terrainData;
         if (terrainData == null)
         {
-            terrainData = new TerrainData();
-            terrain.terrainData = terrainData;
-            Debug.Log("Created new TerrainData for terrain");
+            Debug.LogError("No TerrainData found on assigned terrain. Please assign a Terrain with valid TerrainData in the Editor.");
+            return;
         }
         
         terrainData.heightmapResolution = mapWidth + 1;
