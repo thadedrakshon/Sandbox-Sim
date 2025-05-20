@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class CombatSystem : MonoBehaviour
 {
@@ -7,8 +8,13 @@ public class CombatSystem : MonoBehaviour
     [SerializeField] private int attackDamage = 10;
     [SerializeField] private LayerMask enemyLayers;
     [SerializeField] public Animator animator;
+    [SerializeField] private Color attackFlashColor = Color.red;
+    [SerializeField] private float flashDuration = 0.1f;
     
     private float lastAttackTime;
+    private Color? originalColor = null;
+    private Renderer cachedRenderer;
+    private SkinnedMeshRenderer cachedSkinnedRenderer;
     
     private void Awake()
     {
@@ -16,6 +22,9 @@ public class CombatSystem : MonoBehaviour
         {
             animator = GetComponentInChildren<Animator>();
         }
+        // Try to cache a Renderer or SkinnedMeshRenderer for color flash
+        cachedRenderer = GetComponentInChildren<Renderer>();
+        cachedSkinnedRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
     }
     
     public void Attack()
@@ -29,6 +38,22 @@ public class CombatSystem : MonoBehaviour
         if (animator != null)
         {
             animator.SetTrigger("Attack");
+        }
+        
+        // Flash color for feedback
+        if (cachedSkinnedRenderer != null && cachedSkinnedRenderer.material.HasProperty("_Color"))
+        {
+            if (!originalColor.HasValue)
+                originalColor = cachedSkinnedRenderer.material.color;
+            StopAllCoroutines();
+            StartCoroutine(FlashColorCoroutine(cachedSkinnedRenderer));
+        }
+        else if (cachedRenderer != null && cachedRenderer.material.HasProperty("_Color"))
+        {
+            if (!originalColor.HasValue)
+                originalColor = cachedRenderer.material.color;
+            StopAllCoroutines();
+            StartCoroutine(FlashColorCoroutine(cachedRenderer));
         }
         
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, attackRange, enemyLayers);
@@ -49,6 +74,22 @@ public class CombatSystem : MonoBehaviour
                 }
             }
         }
+    }
+    
+    private System.Collections.IEnumerator FlashColorCoroutine(Renderer rend)
+    {
+        rend.material.color = attackFlashColor;
+        yield return new WaitForSeconds(flashDuration);
+        if (originalColor.HasValue)
+            rend.material.color = originalColor.Value;
+    }
+    
+    private System.Collections.IEnumerator FlashColorCoroutine(SkinnedMeshRenderer rend)
+    {
+        rend.material.color = attackFlashColor;
+        yield return new WaitForSeconds(flashDuration);
+        if (originalColor.HasValue)
+            rend.material.color = originalColor.Value;
     }
     
     private void OnDrawGizmosSelected()
