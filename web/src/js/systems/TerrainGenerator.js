@@ -55,48 +55,6 @@ export class TerrainGenerator {
   
   _generateHeightMap() {
     const heightMap = Array(this.mapWidth).fill().map(() => Array(this.mapHeight).fill(0));
-    
-    const octaveOffsets = [];
-    const prng = this._seededRandom(this.seed);
-    for (let i = 0; i < this.octaves; i++) {
-      const offsetX = prng() * 100000;
-      const offsetY = prng() * 100000;
-      octaveOffsets.push({ x: offsetX, y: offsetY });
-    }
-    
-    let minHeight = Number.MAX_VALUE;
-    let maxHeight = Number.MIN_VALUE;
-    
-    for (let y = 0; y < this.mapHeight; y++) {
-      for (let x = 0; x < this.mapWidth; x++) {
-        let amplitude = 1;
-        let frequency = 1;
-        let noiseHeight = 0;
-        
-        for (let i = 0; i < this.octaves; i++) {
-          const sampleX = (x - this.mapWidth / 2) / this.noiseScale * frequency + octaveOffsets[i].x;
-          const sampleY = (y - this.mapHeight / 2) / this.noiseScale * frequency + octaveOffsets[i].y;
-          
-          const perlinValue = this._perlinNoise(sampleX, sampleY) * 2 - 1;
-          noiseHeight += perlinValue * amplitude;
-          
-          amplitude *= this.persistence;
-          frequency *= this.lacunarity;
-        }
-        
-        if (noiseHeight > maxHeight) maxHeight = noiseHeight;
-        if (noiseHeight < minHeight) minHeight = noiseHeight;
-        
-        heightMap[x][y] = noiseHeight;
-      }
-    }
-    
-    for (let y = 0; y < this.mapHeight; y++) {
-      for (let x = 0; x < this.mapWidth; x++) {
-        heightMap[x][y] = this._inverseLerp(minHeight, maxHeight, heightMap[x][y]);
-      }
-    }
-    
     return heightMap;
   }
   
