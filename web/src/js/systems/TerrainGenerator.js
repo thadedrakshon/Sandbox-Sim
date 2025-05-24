@@ -40,7 +40,7 @@ export class TerrainGenerator {
     
     geometry.computeVertexNormals();
     
-    const grassTexture = this.textureLoader.load('./assets/textures/grass.jpg');
+    const grassTexture = this.textureLoader.load('./textures/grass.jpg');
     grassTexture.wrapS = THREE.RepeatWrapping;
     grassTexture.wrapT = THREE.RepeatWrapping;
     grassTexture.repeat.set(20, 20); // Repeat texture to make grid pattern visible
