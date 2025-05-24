@@ -69,6 +69,35 @@ export class Player {
     
     this.lastAttackTime = now;
     
+    const originalColor = this.model.material.color.clone();
+    this.model.material.color.set(0xFF0000); // Flash red
+    
+    const weaponGeometry = new THREE.BoxGeometry(0.1, 0.1, 1.5);
+    const weaponMaterial = new THREE.MeshStandardMaterial({ color: 0xCCCCCC });
+    const weapon = new THREE.Mesh(weaponGeometry, weaponMaterial);
+    
+    weapon.position.copy(this.model.position);
+    weapon.position.y += 0.5;
+    
+    const direction = new THREE.Vector3(0, 0, -1);
+    direction.applyQuaternion(this.camera.quaternion);
+    weapon.lookAt(this.model.position.clone().add(direction));
+    
+    this.scene.add(weapon);
+    
+    const swingAnimation = () => {
+      weapon.rotation.x += 0.2;
+      if (weapon.rotation.x < Math.PI) {
+        requestAnimationFrame(swingAnimation);
+      } else {
+        this.scene.remove(weapon);
+        
+        this.model.material.color.copy(originalColor);
+      }
+    };
+    
+    swingAnimation();
+    
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
     

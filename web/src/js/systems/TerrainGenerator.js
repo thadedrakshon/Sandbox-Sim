@@ -10,7 +10,7 @@ export class TerrainGenerator {
     this.persistence = options.persistence || 0.5;
     this.lacunarity = options.lacunarity || 2;
     this.seed = options.seed || 42;
-    this.heightMultiplier = options.heightMultiplier || 10;
+    this.heightMultiplier = options.heightMultiplier || 3; // Reduced from 10 to make grass lower
     
     this.heightMap = null;
     this.terrain = null;
