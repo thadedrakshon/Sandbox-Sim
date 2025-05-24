@@ -61,6 +61,16 @@ export class ThirdPersonControls {
     const y = this.distance * Math.cos(this.theta);
     const z = this.distance * Math.sin(this.theta) * Math.cos(this.phi);
     
+    console.log('ThirdPersonControls: Updating camera position', {
+      targetPosition: this.target.position,
+      cameraOffset: { x, y, z },
+      newCameraPosition: {
+        x: this.target.position.x + x,
+        y: this.target.position.y + y,
+        z: this.target.position.z + z
+      }
+    });
+    
     this.camera.position.set(
       this.target.position.x + x,
       this.target.position.y + y,

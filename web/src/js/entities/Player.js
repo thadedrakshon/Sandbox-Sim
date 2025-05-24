@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { ThirdPersonControls } from '../utils/ThirdPersonControls.js';
 
 export class Player {
   constructor(scene, camera, terrainGenerator) {
@@ -15,6 +14,21 @@ export class Player {
     this.attackCooldown = 1;
     this.lastAttackTime = 0;
     
+    this.cameraDistance = 10;
+    this.cameraHeight = 5;
+    this.cameraRotation = 0;
+    this.minDistance = 2;
+    this.maxDistance = 20;
+    
+    this.keys = {
+      forward: false,
+      backward: false,
+      left: false,
+      right: false
+    };
+    this.mouseDown = false;
+    this.lastMouseX = 0;
+    
     this._init();
   }
   
@@ -25,30 +39,109 @@ export class Player {
     this.model.castShadow = true;
     this.scene.add(this.model);
     
-    this.controls = new ThirdPersonControls(
-      this.camera,
-      this.model,
-      document.getElementById('game-container')
-    );
-    
     this.model.position.set(0, 2, 0);
     
-    document.addEventListener('mousedown', (event) => {
-      if (event.button === 0) { // Left click
-        this.attack();
-      }
-    });
+    document.addEventListener('keydown', this._onKeyDown.bind(this));
+    document.addEventListener('keyup', this._onKeyUp.bind(this));
+    document.addEventListener('mousedown', this._onMouseDown.bind(this));
+    document.addEventListener('mouseup', this._onMouseUp.bind(this));
+    document.addEventListener('mousemove', this._onMouseMove.bind(this));
+    document.addEventListener('wheel', this._onMouseWheel.bind(this));
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
     
-    document.addEventListener('keydown', (event) => {
-      if (event.code === 'KeyB') {
-        this.toggleBuildingMode();
-      }
-    });
+    this._updateCameraPosition();
+  }
+  
+  _onKeyDown(event) {
+    switch(event.code) {
+      case 'KeyW': this.keys.forward = true; break;
+      case 'KeyA': this.keys.left = true; break;
+      case 'KeyS': this.keys.backward = true; break;
+      case 'KeyD': this.keys.right = true; break;
+      case 'KeyB': this.toggleBuildingMode(); break;
+    }
+  }
+  
+  _onKeyUp(event) {
+    switch(event.code) {
+      case 'KeyW': this.keys.forward = false; break;
+      case 'KeyA': this.keys.left = false; break;
+      case 'KeyS': this.keys.backward = false; break;
+      case 'KeyD': this.keys.right = false; break;
+    }
+  }
+  
+  _onMouseDown(event) {
+    if (event.button === 0) { // Left click
+      this.attack();
+    } else if (event.button === 2) { // Right click
+      this.mouseDown = true;
+      this.lastMouseX = event.clientX;
+    }
+  }
+  
+  _onMouseUp(event) {
+    if (event.button === 2) { // Right click
+      this.mouseDown = false;
+    }
+  }
+  
+  _onMouseMove(event) {
+    if (this.mouseDown) {
+      const deltaX = event.clientX - this.lastMouseX;
+      this.cameraRotation += deltaX * 0.01;
+      this.lastMouseX = event.clientX;
+    }
+  }
+  
+  _onMouseWheel(event) {
+    const delta = Math.sign(event.deltaY);
+    this.cameraDistance = Math.max(
+      this.minDistance,
+      Math.min(this.maxDistance, this.cameraDistance + delta)
+    );
+  }
+  
+  _updateCameraPosition() {
+    const x = this.model.position.x + this.cameraDistance * Math.sin(this.cameraRotation);
+    const y = this.model.position.y + this.cameraHeight;
+    const z = this.model.position.z + this.cameraDistance * Math.cos(this.cameraRotation);
+    
+    this.camera.position.set(x, y, z);
+    this.camera.lookAt(this.model.position);
   }
   
   update(delta) {
-    this.controls.update(delta, this.terrainGenerator);
+    const moveX = (this.keys.right ? 1 : 0) - (this.keys.left ? 1 : 0);
+    const moveZ = (this.keys.backward ? 1 : 0) - (this.keys.forward ? 1 : 0);
     
+    if (moveX !== 0 || moveZ !== 0) {
+      const angle = this.cameraRotation;
+      const sin = Math.sin(angle);
+      const cos = Math.cos(angle);
+      
+      const moveVector = new THREE.Vector3(
+        moveX * cos - moveZ * sin,
+        0,
+        moveX * sin + moveZ * cos
+      ).normalize().multiplyScalar(this.moveSpeed * delta);
+      
+      this.model.position.add(moveVector);
+      
+      if (moveVector.length() > 0) {
+        this.model.rotation.y = Math.atan2(moveVector.x, moveVector.z);
+      }
+      
+      if (this.terrainGenerator) {
+        const terrainHeight = this.terrainGenerator.getHeightAt(
+          this.model.position.x,
+          this.model.position.z
+        );
+        this.model.position.y = terrainHeight + 1; // 1 unit above terrain
+      }
+    }
+    
+    this._updateCameraPosition();
   }
   
   attack() {
