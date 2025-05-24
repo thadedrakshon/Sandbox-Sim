@@ -17,10 +17,12 @@ export class ThirdPersonControls {
     this.autoRotate = false;
     this.autoRotateSpeed = 0.5;
     
-    this.phi = 0; // Horizontal angle
+    this.phi = Math.PI; // Horizontal angle - start behind player
     this.theta = Math.PI / 4; // Vertical angle
     this.minTheta = 0.1;
     this.maxTheta = Math.PI / 2 - 0.1;
+    
+    this._updateCameraPosition();
     
     this.moveSpeed = 5.0;
     this.moveForward = false;
@@ -52,6 +54,20 @@ export class ThirdPersonControls {
         this.domElement.requestPointerLock();
       }
     });
+  }
+  
+  _updateCameraPosition() {
+    const x = this.distance * Math.sin(this.theta) * Math.sin(this.phi);
+    const y = this.distance * Math.cos(this.theta);
+    const z = this.distance * Math.sin(this.theta) * Math.cos(this.phi);
+    
+    this.camera.position.set(
+      this.target.position.x + x,
+      this.target.position.y + y,
+      this.target.position.z + z
+    );
+    
+    this.camera.lookAt(this.target.position);
   }
   
   _onKeyDown(event) {
@@ -144,17 +160,7 @@ export class ThirdPersonControls {
       }
     }
     
-    const x = this.distance * Math.sin(this.theta) * Math.sin(this.phi);
-    const y = this.distance * Math.cos(this.theta);
-    const z = this.distance * Math.sin(this.theta) * Math.cos(this.phi);
-    
-    this.camera.position.set(
-      this.target.position.x + x,
-      this.target.position.y + y,
-      this.target.position.z + z
-    );
-    
-    this.camera.lookAt(this.target.position);
+    this._updateCameraPosition();
   }
   
   dispose() {
