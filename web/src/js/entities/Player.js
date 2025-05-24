@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { FPSControls } from '../utils/FPSControls.js';
+import { ThirdPersonControls } from '../utils/ThirdPersonControls.js';
 
 export class Player {
   constructor(scene, camera, terrainGenerator) {
@@ -25,10 +25,13 @@ export class Player {
     this.model.castShadow = true;
     this.scene.add(this.model);
     
-    this.controls = new FPSControls(this.camera, document.getElementById('game-container'));
-    this.scene.add(this.controls.getObject());
+    this.controls = new ThirdPersonControls(
+      this.camera,
+      this.model,
+      document.getElementById('game-container')
+    );
     
-    this.controls.getObject().position.set(0, 2, 0);
+    this.model.position.set(0, 2, 0);
     
     document.addEventListener('mousedown', (event) => {
       if (event.button === 0) { // Left click
@@ -44,23 +47,8 @@ export class Player {
   }
   
   update(delta) {
-    this.controls.update(delta);
+    this.controls.update(delta, this.terrainGenerator);
     
-    const position = this.controls.getObject().position;
-    const terrainHeight = this.terrainGenerator.getHeightAt(position.x, position.z);
-    position.y = terrainHeight + 2; // 2 units above terrain
-    
-    this.model.position.copy(position);
-    this.model.position.y -= 1; // Adjust to place feet on ground
-    
-    const cameraDirection = new THREE.Vector3(0, 0, -1);
-    cameraDirection.applyQuaternion(this.camera.quaternion);
-    cameraDirection.y = 0;
-    cameraDirection.normalize();
-    
-    if (cameraDirection.length() > 0) {
-      this.model.lookAt(this.model.position.clone().add(cameraDirection));
-    }
   }
   
   attack() {
@@ -79,9 +67,9 @@ export class Player {
     weapon.position.copy(this.model.position);
     weapon.position.y += 0.5;
     
-    const direction = new THREE.Vector3(0, 0, -1);
-    direction.applyQuaternion(this.camera.quaternion);
-    weapon.lookAt(this.model.position.clone().add(direction));
+    const forward = new THREE.Vector3(0, 0, 1);
+    forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.model.rotation.y);
+    weapon.lookAt(this.model.position.clone().add(forward));
     
     this.scene.add(weapon);
     
@@ -91,7 +79,6 @@ export class Player {
         requestAnimationFrame(swingAnimation);
       } else {
         this.scene.remove(weapon);
-        
         this.model.material.color.copy(originalColor);
       }
     };
@@ -99,7 +86,13 @@ export class Player {
     swingAnimation();
     
     const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
+    const rayOrigin = this.model.position.clone();
+    rayOrigin.y += 1; // Adjust to weapon height
+    
+    const rayDirection = new THREE.Vector3(0, 0, 1);
+    rayDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.model.rotation.y);
+    
+    raycaster.set(rayOrigin, rayDirection);
     
     const hits = raycaster.intersectObjects(this.scene.children, true);
     

@@ -10,10 +10,12 @@ export class TerrainGenerator {
     this.persistence = options.persistence || 0.5;
     this.lacunarity = options.lacunarity || 2;
     this.seed = options.seed || 42;
-    this.heightMultiplier = options.heightMultiplier || 3; // Reduced from 10 to make grass lower
+    this.heightMultiplier = options.heightMultiplier || 0; // Set to 0 for completely flat terrain
     
     this.heightMap = null;
     this.terrain = null;
+    
+    this.textureLoader = new THREE.TextureLoader();
   }
   
   generateTerrain() {
@@ -38,8 +40,14 @@ export class TerrainGenerator {
     
     geometry.computeVertexNormals();
     
+    const grassTexture = this.textureLoader.load('/textures/grass.jpg');
+    grassTexture.wrapS = THREE.RepeatWrapping;
+    grassTexture.wrapT = THREE.RepeatWrapping;
+    grassTexture.repeat.set(20, 20); // Repeat texture to make grid pattern visible
+    
     const material = new THREE.MeshStandardMaterial({
-      color: 0x8BC34A,
+      color: 0xffffff, // Use white color to show texture properly
+      map: grassTexture,
       flatShading: false,
       side: THREE.DoubleSide
     });
