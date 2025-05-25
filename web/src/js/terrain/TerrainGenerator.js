@@ -3,68 +3,71 @@ import * as THREE from 'three';
 export class TerrainGenerator {
   constructor(scene) {
     this.scene = scene;
-    this.size = 500; // Make it much larger
-    this.resolution = 1; // Flat plane, no subdivisions needed
-    console.log('TerrainGenerator: Starting terrain generation...');
+    console.log('TerrainGenerator: Creating textured terrain...');
     this.generateTerrain();
   }
-  
+
   generateTerrain() {
-    console.log('TerrainGenerator: Creating plane geometry with size:', this.size);
+    // Create a simple plane geometry
+    const geometry = new THREE.PlaneGeometry(100, 100);
     
-    const geometry = new THREE.PlaneGeometry(
-      this.size,
-      this.size,
-      this.resolution,
-      this.resolution
-    );
+    // Create a canvas texture for a subtle grid pattern
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const context = canvas.getContext('2d');
     
-    // All heights are 0 for a flat plane
-    const vertices = geometry.attributes.position.array;
-    for (let i = 0; i < vertices.length; i += 3) {
-      vertices[i + 1] = 0;
+    // Fill with green background
+    context.fillStyle = '#4a7c59';
+    context.fillRect(0, 0, 256, 256);
+    
+    // Add subtle grid lines
+    context.strokeStyle = '#5a8c69';
+    context.lineWidth = 1;
+    
+    // Draw grid
+    for (let i = 0; i <= 16; i++) {
+      const pos = (i / 16) * 256;
+      context.beginPath();
+      context.moveTo(pos, 0);
+      context.lineTo(pos, 256);
+      context.stroke();
+      
+      context.beginPath();
+      context.moveTo(0, pos);
+      context.lineTo(256, pos);
+      context.stroke();
     }
     
-    geometry.computeVertexNormals();
-    geometry.computeBoundingBox(); // Manually compute bounding box
-    geometry.computeBoundingSphere(); // Also compute bounding sphere
+    // Create texture from canvas
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(10, 10); // Repeat the pattern
     
-    // Simple green material for grass - make it brighter
-    const material = new THREE.MeshStandardMaterial({
-      color: 0x00FF00, // Bright green for visibility
-      roughness: 0.8,
-      metalness: 0.2,
-      flatShading: false,
-      side: THREE.DoubleSide // Make sure both sides are visible
+    // Create material with the texture
+    const material = new THREE.MeshBasicMaterial({ 
+      map: texture,
+      side: THREE.DoubleSide
     });
-    
-    console.log('TerrainGenerator: Creating terrain mesh...');
+
+    // Create the mesh
     this.terrain = new THREE.Mesh(geometry, material);
     
-    // Rotate to make it horizontal (lying flat)
+    // Rotate it to be horizontal
     this.terrain.rotation.x = -Math.PI / 2;
-    this.terrain.position.set(0, 0, 0); // Position at ground level
-    this.terrain.receiveShadow = true;
-    this.terrain.userData = { isTerrain: true }; // Mark as terrain for raycasting
     
-    // Update matrix after positioning
-    this.terrain.updateMatrix();
-    this.terrain.updateMatrixWorld();
+    // Position it at ground level
+    this.terrain.position.set(0, 0, 0);
     
-    console.log('TerrainGenerator: Terrain rotation:', this.terrain.rotation);
-    console.log('TerrainGenerator: Terrain position:', this.terrain.position);
-    console.log('TerrainGenerator: Terrain scale:', this.terrain.scale);
-    console.log('TerrainGenerator: Adding terrain to scene...');
-    
+    // Add to scene
     this.scene.add(this.terrain);
     
-    console.log('TerrainGenerator: Terrain added successfully. Scene children count:', this.scene.children.length);
-    console.log('TerrainGenerator: Terrain bounding box:', this.terrain.geometry.boundingBox);
-    console.log('TerrainGenerator: Terrain bounding sphere:', this.terrain.geometry.boundingSphere);
+    console.log('TerrainGenerator: Textured terrain added to scene');
+    console.log('TerrainGenerator: Scene children count:', this.scene.children.length);
   }
-  
+
   getHeightAt(x, z) {
-    // Flat terrain at ground level
     return 0;
   }
 } 

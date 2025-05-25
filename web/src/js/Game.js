@@ -7,7 +7,7 @@ import { UIManager } from './systems/UIManager.js';
 export class Game {
   constructor() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x000000); // Black background to see terrain
+    this.scene.background = new THREE.Color(0x87CEEB); // Sky blue background
     
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     this.camera.position.set(0, 20, 20); // Position camera higher and further back
