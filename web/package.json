@@ -1,18 +1,16 @@
 {
-  "name": "sandbox-sim-web",
+  "name": "sandbox-sim",
   "version": "1.0.0",
-  "description": "Kenshi-style sandbox simulation game using Three.js",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "three": "^0.160.0",
-    "simplex-noise": "^4.0.1"
+    "three": "^0.160.0"
   },
   "devDependencies": {
-    "vite": "^5.0.8"
+    "vite": "^5.0.0"
   }
 }
