@@ -142,6 +142,8 @@ export class Player {
   
   _onMouseDown(event) {
     if (event.button === 0) { // Left click
+      console.log('Player: Left click detected');
+      
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2(
         (event.clientX / window.innerWidth) * 2 - 1,
@@ -151,11 +153,18 @@ export class Player {
       raycaster.setFromCamera(mouse, this.camera);
       const intersects = raycaster.intersectObjects(this.scene.children);
       
+      console.log('Player: Raycaster found', intersects.length, 'intersections');
+      if (intersects.length > 0) {
+        console.log('Player: First intersection object:', intersects[0].object);
+        console.log('Player: Object userData:', intersects[0].object.userData);
+      }
+      
       if (intersects.length > 0) {
         const hitObject = intersects[0].object;
         
         // Check if we clicked an enemy
         if (hitObject.userData.isEnemy) {
+          console.log('Player: Clicked on enemy');
           this.targetEnemy = hitObject.userData.entity;
           this.targetPosition = new THREE.Vector3(
             hitObject.position.x,
@@ -164,6 +173,7 @@ export class Player {
           );
           this.targetIndicator.material.color.set(0xff0000); // Red for enemy target
         } else {
+          console.log('Player: Clicked on terrain/other object');
           // Regular terrain click
           this.targetEnemy = null;
           const hitPoint = intersects[0].point;
@@ -176,8 +186,12 @@ export class Player {
         this.targetIndicator.position.y = 0.1; // Slightly above ground
         this.targetIndicator.visible = true;
         
+        console.log('Player: Set target position to:', this.targetPosition);
+        
         // Animate target indicator
         this._animateTargetIndicator();
+      } else {
+        console.log('Player: No intersections found - nothing to click on');
       }
     } else if (event.button === 2) { // Right click
       this.mouseDown = true;
