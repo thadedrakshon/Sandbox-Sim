@@ -3,7 +3,7 @@ import * as THREE from 'three';
 export class TerrainGenerator {
   constructor(scene) {
     this.scene = scene;
-    this.size = 200; // Make it much larger
+    this.size = 500; // Make it much larger
     this.resolution = 1; // Flat plane, no subdivisions needed
     console.log('TerrainGenerator: Starting terrain generation...');
     this.generateTerrain();
@@ -26,6 +26,8 @@ export class TerrainGenerator {
     }
     
     geometry.computeVertexNormals();
+    geometry.computeBoundingBox(); // Manually compute bounding box
+    geometry.computeBoundingSphere(); // Also compute bounding sphere
     
     // Simple green material for grass - make it brighter
     const material = new THREE.MeshStandardMaterial({
@@ -41,9 +43,13 @@ export class TerrainGenerator {
     
     // Rotate to make it horizontal (lying flat)
     this.terrain.rotation.x = -Math.PI / 2;
-    this.terrain.position.set(0, -1, 0); // Position slightly below origin
+    this.terrain.position.set(0, 0, 0); // Position at ground level
     this.terrain.receiveShadow = true;
     this.terrain.userData = { isTerrain: true }; // Mark as terrain for raycasting
+    
+    // Update matrix after positioning
+    this.terrain.updateMatrix();
+    this.terrain.updateMatrixWorld();
     
     console.log('TerrainGenerator: Terrain rotation:', this.terrain.rotation);
     console.log('TerrainGenerator: Terrain position:', this.terrain.position);
@@ -54,10 +60,11 @@ export class TerrainGenerator {
     
     console.log('TerrainGenerator: Terrain added successfully. Scene children count:', this.scene.children.length);
     console.log('TerrainGenerator: Terrain bounding box:', this.terrain.geometry.boundingBox);
+    console.log('TerrainGenerator: Terrain bounding sphere:', this.terrain.geometry.boundingSphere);
   }
   
   getHeightAt(x, z) {
-    // Flat terrain at y = -1
-    return -1;
+    // Flat terrain at ground level
+    return 0;
   }
 } 
