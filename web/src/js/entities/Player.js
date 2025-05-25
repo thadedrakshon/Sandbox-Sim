@@ -20,29 +20,85 @@ export class Player {
     this.minDistance = 2;
     this.maxDistance = 20;
     
-    this.keys = {
-      forward: false,
-      backward: false,
-      left: false,
-      right: false
-    };
+    this.targetPosition = null;
+    this.targetEnemy = null;
     this.mouseDown = false;
     this.lastMouseX = 0;
+    
+    // Animation properties
+    this.isWalking = false;
+    this.walkCycle = 0;
+    this.walkSpeed = 10;
+    this.legAngle = 0;
+    this.armAngle = 0;
     
     this._init();
   }
   
   _init() {
-    const geometry = new THREE.CapsuleGeometry(0.5, 1, 4, 8);
-    const material = new THREE.MeshStandardMaterial({ color: 0x2196F3 });
-    this.model = new THREE.Mesh(geometry, material);
-    this.model.castShadow = true;
+    // Create humanoid model
+    this.model = new THREE.Group();
+    
+    // Body
+    const bodyGeometry = new THREE.CapsuleGeometry(0.3, 0.8, 4, 8);
+    const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x2196F3 });
+    this.body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    this.body.position.y = 1.2;
+    this.body.castShadow = true;
+    this.model.add(this.body);
+    
+    // Head
+    const headGeometry = new THREE.SphereGeometry(0.25, 16, 16);
+    const headMaterial = new THREE.MeshStandardMaterial({ color: 0xFFD700 });
+    this.head = new THREE.Mesh(headGeometry, headMaterial);
+    this.head.position.y = 1.8;
+    this.head.castShadow = true;
+    this.model.add(this.head);
+    
+    // Arms
+    const armGeometry = new THREE.CapsuleGeometry(0.1, 0.4, 4, 8);
+    const armMaterial = new THREE.MeshStandardMaterial({ color: 0x2196F3 });
+    
+    this.leftArm = new THREE.Mesh(armGeometry, armMaterial);
+    this.leftArm.position.set(-0.4, 1.2, 0);
+    this.leftArm.castShadow = true;
+    this.model.add(this.leftArm);
+    
+    this.rightArm = new THREE.Mesh(armGeometry, armMaterial);
+    this.rightArm.position.set(0.4, 1.2, 0);
+    this.rightArm.castShadow = true;
+    this.model.add(this.rightArm);
+    
+    // Legs
+    const legGeometry = new THREE.CapsuleGeometry(0.12, 0.5, 4, 8);
+    const legMaterial = new THREE.MeshStandardMaterial({ color: 0x1565C0 });
+    
+    this.leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+    this.leftLeg.position.set(-0.2, 0.5, 0);
+    this.leftLeg.castShadow = true;
+    this.model.add(this.leftLeg);
+    
+    this.rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+    this.rightLeg.position.set(0.2, 0.5, 0);
+    this.rightLeg.castShadow = true;
+    this.model.add(this.rightLeg);
+    
     this.scene.add(this.model);
+    this.model.position.set(0, 0, 0);
     
-    this.model.position.set(0, 2, 0);
+    // Create target indicator
+    const targetGeometry = new THREE.RingGeometry(0.5, 0.7, 32);
+    const targetMaterial = new THREE.MeshBasicMaterial({ 
+      color: 0x00ff00,
+      transparent: true,
+      opacity: 0.5,
+      side: THREE.DoubleSide
+    });
+    this.targetIndicator = new THREE.Mesh(targetGeometry, targetMaterial);
+    this.targetIndicator.rotation.x = -Math.PI / 2;
+    this.targetIndicator.visible = false;
+    this.scene.add(this.targetIndicator);
     
-    document.addEventListener('keydown', this._onKeyDown.bind(this));
-    document.addEventListener('keyup', this._onKeyUp.bind(this));
     document.addEventListener('mousedown', this._onMouseDown.bind(this));
     document.addEventListener('mouseup', this._onMouseUp.bind(this));
     document.addEventListener('mousemove', this._onMouseMove.bind(this));
@@ -52,32 +108,102 @@ export class Player {
     this._updateCameraPosition();
   }
   
-  _onKeyDown(event) {
-    switch(event.code) {
-      case 'KeyW': this.keys.forward = true; break;
-      case 'KeyA': this.keys.left = true; break;
-      case 'KeyS': this.keys.backward = true; break;
-      case 'KeyD': this.keys.right = true; break;
-      case 'KeyB': this.toggleBuildingMode(); break;
-    }
-  }
-  
-  _onKeyUp(event) {
-    switch(event.code) {
-      case 'KeyW': this.keys.forward = false; break;
-      case 'KeyA': this.keys.left = false; break;
-      case 'KeyS': this.keys.backward = false; break;
-      case 'KeyD': this.keys.right = false; break;
+  _updateWalkingAnimation(delta) {
+    if (this.isWalking) {
+      this.walkCycle += delta * this.walkSpeed;
+      
+      // Leg animation
+      this.legAngle = Math.sin(this.walkCycle) * 0.5;
+      this.leftLeg.rotation.x = this.legAngle;
+      this.rightLeg.rotation.x = -this.legAngle;
+      
+      // Arm animation (opposite to legs)
+      this.armAngle = Math.sin(this.walkCycle) * 0.3;
+      this.leftArm.rotation.x = -this.armAngle;
+      this.rightArm.rotation.x = this.armAngle;
+      
+      // Slight body bounce
+      this.body.position.y = 1.2 + Math.abs(Math.sin(this.walkCycle)) * 0.1;
+      this.head.position.y = 1.8 + Math.abs(Math.sin(this.walkCycle)) * 0.1;
+    } else {
+      // Reset to idle position
+      this.leftLeg.rotation.x = 0;
+      this.rightLeg.rotation.x = 0;
+      this.leftArm.rotation.x = 0;
+      this.rightArm.rotation.x = 0;
+      this.body.position.y = 1.2;
+      this.head.position.y = 1.8;
     }
   }
   
   _onMouseDown(event) {
     if (event.button === 0) { // Left click
-      this.attack();
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2(
+        (event.clientX / window.innerWidth) * 2 - 1,
+        -(event.clientY / window.innerHeight) * 2 + 1
+      );
+      
+      raycaster.setFromCamera(mouse, this.camera);
+      const intersects = raycaster.intersectObjects(this.scene.children);
+      
+      if (intersects.length > 0) {
+        const hitObject = intersects[0].object;
+        
+        // Check if we clicked an enemy
+        if (hitObject.userData.isEnemy) {
+          this.targetEnemy = hitObject.userData.entity;
+          this.targetPosition = new THREE.Vector3(
+            hitObject.position.x,
+            0,
+            hitObject.position.z
+          );
+          this.targetIndicator.material.color.set(0xff0000); // Red for enemy target
+        } else {
+          // Regular terrain click
+          this.targetEnemy = null;
+          const hitPoint = intersects[0].point;
+          this.targetPosition = new THREE.Vector3(hitPoint.x, 0, hitPoint.z);
+          this.targetIndicator.material.color.set(0x00ff00); // Green for movement target
+        }
+        
+        // Show and position target indicator
+        this.targetIndicator.position.copy(this.targetPosition);
+        this.targetIndicator.position.y = 0.1; // Slightly above ground
+        this.targetIndicator.visible = true;
+        
+        // Animate target indicator
+        this._animateTargetIndicator();
+      }
     } else if (event.button === 2) { // Right click
       this.mouseDown = true;
       this.lastMouseX = event.clientX;
     }
+  }
+  
+  _animateTargetIndicator() {
+    const duration = 1000; // 1 second
+    const startTime = performance.now();
+    
+    const animate = () => {
+      const elapsed = performance.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Scale and fade animation
+      const scale = 1 + Math.sin(progress * Math.PI) * 0.2;
+      this.targetIndicator.scale.set(scale, scale, scale);
+      this.targetIndicator.material.opacity = 0.5 * (1 - progress);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        this.targetIndicator.visible = false;
+        this.targetIndicator.scale.set(1, 1, 1);
+        this.targetIndicator.material.opacity = 0.5;
+      }
+    };
+    
+    animate();
   }
   
   _onMouseUp(event) {
@@ -112,24 +238,53 @@ export class Player {
   }
   
   update(delta) {
-    const moveX = (this.keys.right ? 1 : 0) - (this.keys.left ? 1 : 0);
-    const moveZ = (this.keys.backward ? 1 : 0) - (this.keys.forward ? 1 : 0);
-    
-    if (moveX !== 0 || moveZ !== 0) {
-      const angle = this.cameraRotation;
-      const sin = Math.sin(angle);
-      const cos = Math.cos(angle);
-      
-      const moveVector = new THREE.Vector3(
-        moveX * cos - moveZ * sin,
+    if (this.targetEnemy) {
+      // Update target position to follow enemy
+      this.targetPosition = new THREE.Vector3(
+        this.targetEnemy.model.position.x,
         0,
-        moveX * sin + moveZ * cos
-      ).normalize().multiplyScalar(this.moveSpeed * delta);
+        this.targetEnemy.model.position.z
+      );
       
+      // Check if enemy is dead
+      if (this.targetEnemy.health <= 0) {
+        this.targetEnemy = null;
+        this.targetPosition = null;
+        this.targetIndicator.visible = false;
+        this.isWalking = false;
+        return;
+      }
+    }
+    
+    if (this.targetPosition) {
+      const direction = new THREE.Vector3()
+        .subVectors(this.targetPosition, this.model.position)
+        .normalize();
+      
+      const moveVector = direction.multiplyScalar(this.moveSpeed * delta);
       this.model.position.add(moveVector);
       
+      // Update rotation to face movement direction
       if (moveVector.length() > 0) {
-        this.model.rotation.y = Math.atan2(moveVector.x, moveVector.z);
+        const targetRotation = Math.atan2(moveVector.x, moveVector.z);
+        this.model.rotation.y = targetRotation;
+        this.isWalking = true;
+      }
+      
+      // Check if we've reached the target position
+      const distanceToTarget = this.model.position.distanceTo(this.targetPosition);
+      
+      if (this.targetEnemy) {
+        // If we're in attack range, attack the enemy
+        if (distanceToTarget <= this.attackRange) {
+          this.attack();
+          this.isWalking = false;
+        }
+      } else if (distanceToTarget < 0.1) {
+        // Only clear target position if we're not targeting an enemy
+        this.targetPosition = null;
+        this.targetIndicator.visible = false;
+        this.isWalking = false;
       }
       
       if (this.terrainGenerator) {
@@ -137,9 +292,14 @@ export class Player {
           this.model.position.x,
           this.model.position.z
         );
-        this.model.position.y = terrainHeight + 1; // 1 unit above terrain
+        this.model.position.y = terrainHeight; // Place directly on terrain
       }
+    } else {
+      this.isWalking = false;
     }
+    
+    // Update walking animation
+    this._updateWalkingAnimation(delta);
     
     this._updateCameraPosition();
   }
@@ -150,50 +310,16 @@ export class Player {
     
     this.lastAttackTime = now;
     
-    const originalColor = this.model.material.color.clone();
-    this.model.material.color.set(0xFF0000); // Flash red
+    // Attack animation
+    const originalArmRotation = this.rightArm.rotation.x;
+    this.rightArm.rotation.x = -Math.PI / 2;
     
-    const weaponGeometry = new THREE.BoxGeometry(0.1, 0.1, 1.5);
-    const weaponMaterial = new THREE.MeshStandardMaterial({ color: 0xCCCCCC });
-    const weapon = new THREE.Mesh(weaponGeometry, weaponMaterial);
+    setTimeout(() => {
+      this.rightArm.rotation.x = originalArmRotation;
+    }, 200);
     
-    weapon.position.copy(this.model.position);
-    weapon.position.y += 0.5;
-    
-    const forward = new THREE.Vector3(0, 0, 1);
-    forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.model.rotation.y);
-    weapon.lookAt(this.model.position.clone().add(forward));
-    
-    this.scene.add(weapon);
-    
-    const swingAnimation = () => {
-      weapon.rotation.x += 0.2;
-      if (weapon.rotation.x < Math.PI) {
-        requestAnimationFrame(swingAnimation);
-      } else {
-        this.scene.remove(weapon);
-        this.model.material.color.copy(originalColor);
-      }
-    };
-    
-    swingAnimation();
-    
-    const raycaster = new THREE.Raycaster();
-    const rayOrigin = this.model.position.clone();
-    rayOrigin.y += 1; // Adjust to weapon height
-    
-    const rayDirection = new THREE.Vector3(0, 0, 1);
-    rayDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.model.rotation.y);
-    
-    raycaster.set(rayOrigin, rayDirection);
-    
-    const hits = raycaster.intersectObjects(this.scene.children, true);
-    
-    for (const hit of hits) {
-      if (hit.distance <= this.attackRange && hit.object.userData.isEnemy) {
-        hit.object.userData.entity.takeDamage(this.attackDamage);
-        break;
-      }
+    if (this.targetEnemy) {
+      this.targetEnemy.takeDamage(this.attackDamage);
     }
   }
   
@@ -205,9 +331,19 @@ export class Player {
     this.health -= amount;
     this.health = Math.max(0, this.health);
     
+    // Update health bar
     const healthFill = document.getElementById('health-fill');
     if (healthFill) {
-      healthFill.style.width = `${(this.health / this.maxHealth) * 100}%`;
+      const healthPercent = (this.health / this.maxHealth) * 100;
+      healthFill.style.width = `${healthPercent}%`;
+      
+      if (healthPercent < 25) {
+        healthFill.style.backgroundColor = '#F44336'; // Red
+      } else if (healthPercent < 50) {
+        healthFill.style.backgroundColor = '#FFC107'; // Yellow
+      } else {
+        healthFill.style.backgroundColor = '#4CAF50'; // Green
+      }
     }
     
     if (this.health <= 0) {
@@ -217,5 +353,8 @@ export class Player {
   
   die() {
     console.log("Player died");
+    // Add death animation
+    this.model.rotation.x = Math.PI / 2; // Fall forward
+    this.isWalking = false;
   }
 }
