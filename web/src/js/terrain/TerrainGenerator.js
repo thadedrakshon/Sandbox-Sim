@@ -29,18 +29,19 @@ export class TerrainGenerator {
       color: 0x4CAF50, // Nice green color
       roughness: 0.8,
       metalness: 0.2,
-      flatShading: false
+      flatShading: false,
+      side: THREE.DoubleSide // Make sure both sides are visible
     });
     
     this.terrain = new THREE.Mesh(geometry, material);
     this.terrain.rotation.x = -Math.PI / 2;
-    this.terrain.position.y = -2; // Lower the terrain slightly
+    this.terrain.position.y = 0; // Position at ground level
     this.terrain.receiveShadow = true;
     this.scene.add(this.terrain);
   }
   
   getHeightAt(x, z) {
-    // Flat terrain
+    // Flat terrain at ground level
     return 0;
   }
 } 
