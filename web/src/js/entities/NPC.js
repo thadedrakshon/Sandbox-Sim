@@ -11,7 +11,7 @@ const NPCState = {
 };
 
 export class NPC {
-  constructor(scene, terrainGenerator, options = {}) {
+  constructor(scene, terrainGenerator, options = {}, uiManager) {
     this.scene = scene;
     this.terrainGenerator = terrainGenerator;
     
@@ -31,7 +31,7 @@ export class NPC {
     this.maxHealth = options.maxHealth || 100;
     this.attackDamage = options.attackDamage || 10;
     this.attackRange = options.attackRange || 2;
-    this.attackCooldown = options.attackCooldown || 1.5;
+    this.attackCooldown = options.attackCooldown || 1000; // 1 second
     this.lastAttackTime = 0;
     this.detectionRadius = options.detectionRadius || 10;
     
@@ -41,21 +41,71 @@ export class NPC {
     this.targetFood = null;
     this.stateTime = 0;
     
+    this.uiManager = uiManager;
+    
     this._init();
   }
   
   _init() {
-    const geometry = new THREE.CylinderGeometry(0.5, 0.5, 2, 8);
-    const material = new THREE.MeshStandardMaterial({ 
-      color: this.faction ? this.faction.color : 0xFF5722 
+    // Create humanoid model
+    this.model = new THREE.Group();
+    
+    // Body
+    const bodyGeometry = new THREE.CapsuleGeometry(0.5, 1, 4, 8);
+    const bodyMaterial = new THREE.MeshPhongMaterial({ 
+      color: this.faction === 'yellow' ? 0xffff00 : 0x00ff00 
     });
-    this.model = new THREE.Mesh(geometry, material);
-    this.model.castShadow = true;
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.position.y = 1.5;
+    this.model.add(body);
+    
+    // Head
+    const headGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+    const headMaterial = new THREE.MeshPhongMaterial({ 
+      color: this.faction === 'yellow' ? 0xffff00 : 0x00ff00 
+    });
+    const head = new THREE.Mesh(headGeometry, headMaterial);
+    head.position.y = 2.5;
+    this.model.add(head);
+    
+    // Arms
+    const armGeometry = new THREE.CapsuleGeometry(0.2, 0.8, 4, 8);
+    const armMaterial = new THREE.MeshPhongMaterial({ 
+      color: this.faction === 'yellow' ? 0xffff00 : 0x00ff00 
+    });
+    
+    const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+    leftArm.position.set(-0.7, 1.5, 0);
+    leftArm.rotation.z = Math.PI / 4;
+    this.model.add(leftArm);
+    
+    const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+    rightArm.position.set(0.7, 1.5, 0);
+    rightArm.rotation.z = -Math.PI / 4;
+    this.model.add(rightArm);
+    
+    // Legs
+    const legGeometry = new THREE.CapsuleGeometry(0.25, 0.8, 4, 8);
+    const legMaterial = new THREE.MeshPhongMaterial({ 
+      color: this.faction === 'yellow' ? 0xffff00 : 0x00ff00 
+    });
+    
+    const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+    leftLeg.position.set(-0.3, 0.4, 0);
+    this.model.add(leftLeg);
+    
+    const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+    rightLeg.position.set(0.3, 0.4, 0);
+    this.model.add(rightLeg);
+    
     this.model.userData = { entity: this, isEnemy: true };
     this.scene.add(this.model);
     
     this.model.position.copy(this.position);
     this.model.position.y = this.terrainGenerator.getHeightAt(this.position.x, this.position.z) + 1;
+    
+    // Create health bar
+    this.uiManager.createNPCHealthBar(this);
   }
   
   update(delta) {
@@ -95,6 +145,9 @@ export class NPC {
     const terrainHeight = this.terrainGenerator.getHeightAt(this.position.x, this.position.z);
     this.model.position.copy(this.position);
     this.model.position.y = terrainHeight + 1;
+    
+    // Update health bar
+    this.uiManager.updateNPCHealthBar(this, this.health, this.maxHealth);
   }
   
   updateIdleState() {
@@ -262,6 +315,7 @@ export class NPC {
   
   die() {
     this.scene.remove(this.model);
+    this.uiManager.removeNPCHealthBar(this);
   }
   
   shouldFlee() {

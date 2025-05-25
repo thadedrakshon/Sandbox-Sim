@@ -262,29 +262,32 @@ export class Player {
         .normalize();
       
       const moveVector = direction.multiplyScalar(this.moveSpeed * delta);
-      this.model.position.add(moveVector);
+      
+      // Calculate distance to target
+      const distanceToTarget = this.model.position.distanceTo(this.targetPosition);
+      
+      // If targeting an enemy, stop at attack range
+      if (this.targetEnemy && distanceToTarget <= this.attackRange) {
+        this.isWalking = false;
+        this.attack();
+      } else {
+        // Only move if we're not at the target position
+        if (distanceToTarget > 0.1) {
+          this.model.position.add(moveVector);
+          this.isWalking = true;
+        } else {
+          this.isWalking = false;
+          if (!this.targetEnemy) {
+            this.targetPosition = null;
+            this.targetIndicator.visible = false;
+          }
+        }
+      }
       
       // Update rotation to face movement direction
       if (moveVector.length() > 0) {
         const targetRotation = Math.atan2(moveVector.x, moveVector.z);
         this.model.rotation.y = targetRotation;
-        this.isWalking = true;
-      }
-      
-      // Check if we've reached the target position
-      const distanceToTarget = this.model.position.distanceTo(this.targetPosition);
-      
-      if (this.targetEnemy) {
-        // If we're in attack range, attack the enemy
-        if (distanceToTarget <= this.attackRange) {
-          this.attack();
-          this.isWalking = false;
-        }
-      } else if (distanceToTarget < 0.1) {
-        // Only clear target position if we're not targeting an enemy
-        this.targetPosition = null;
-        this.targetIndicator.visible = false;
-        this.isWalking = false;
       }
       
       if (this.terrainGenerator) {
@@ -292,10 +295,8 @@ export class Player {
           this.model.position.x,
           this.model.position.z
         );
-        this.model.position.y = terrainHeight; // Place directly on terrain
+        this.model.position.y = terrainHeight;
       }
-    } else {
-      this.isWalking = false;
     }
     
     // Update walking animation
