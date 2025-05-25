@@ -4,8 +4,7 @@ export class TerrainGenerator {
   constructor(scene) {
     this.scene = scene;
     this.size = 100;
-    this.resolution = 128;
-    this.heightScale = 0; // Flat terrain
+    this.resolution = 1; // Flat plane, no subdivisions needed
     this.generateTerrain();
   }
   
@@ -17,7 +16,7 @@ export class TerrainGenerator {
       this.resolution
     );
     
-    // Flat terrain: set all heights to 0
+    // All heights are 0 for a flat plane
     const vertices = geometry.attributes.position.array;
     for (let i = 0; i < vertices.length; i += 3) {
       vertices[i + 1] = 0;
@@ -27,7 +26,9 @@ export class TerrainGenerator {
     
     // Load grass texture
     const textureLoader = new THREE.TextureLoader();
-    const grassTexture = textureLoader.load('./textures/grass.jpg');
+    const grassTexture = textureLoader.load('./textures/grass.jpg', undefined, undefined, () => {
+      console.warn('Grass texture not found at ./textures/grass.jpg');
+    });
     grassTexture.wrapS = THREE.RepeatWrapping;
     grassTexture.wrapT = THREE.RepeatWrapping;
     grassTexture.repeat.set(20, 20);
