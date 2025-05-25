@@ -26,8 +26,8 @@ export class TerrainGenerator {
     
     // Load grass texture
     const textureLoader = new THREE.TextureLoader();
-    const grassTexture = textureLoader.load('./textures/grass.jpg', undefined, undefined, () => {
-      console.warn('Grass texture not found at ./textures/grass.jpg');
+    const grassTexture = textureLoader.load('./textures/grass.png', undefined, undefined, () => {
+      console.warn('Grass texture not found at ./textures/grass.png');
     });
     grassTexture.wrapS = THREE.RepeatWrapping;
     grassTexture.wrapT = THREE.RepeatWrapping;
