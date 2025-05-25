@@ -24,18 +24,9 @@ export class TerrainGenerator {
     
     geometry.computeVertexNormals();
     
-    // Load grass texture
-    const textureLoader = new THREE.TextureLoader();
-    const grassTexture = textureLoader.load('./textures/grass.png', undefined, undefined, () => {
-      console.warn('Grass texture not found at ./textures/grass.png');
-    });
-    grassTexture.wrapS = THREE.RepeatWrapping;
-    grassTexture.wrapT = THREE.RepeatWrapping;
-    grassTexture.repeat.set(20, 20);
-    
+    // Simple green material for grass
     const material = new THREE.MeshStandardMaterial({
-      color: 0xffffff, // Use white to show texture
-      map: grassTexture,
+      color: 0x4CAF50, // Nice green color
       roughness: 0.8,
       metalness: 0.2,
       flatShading: false
