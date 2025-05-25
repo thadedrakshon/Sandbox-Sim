@@ -37,14 +37,18 @@ export class TerrainGenerator {
     
     this.terrain = new THREE.Mesh(geometry, material);
     this.terrain.rotation.x = -Math.PI / 2;
+    this.terrain.position.y = -2; // Lower the terrain slightly
     this.terrain.receiveShadow = true;
     this.scene.add(this.terrain);
   }
   
   getHeightAt(x, z) {
-    // Simple noise-based height generation
+    // More interesting terrain generation
     const scale = 0.1;
-    const height = Math.sin(x * scale) * Math.cos(z * scale) * this.heightScale;
+    const height = (
+      Math.sin(x * scale) * Math.cos(z * scale) +
+      Math.sin(x * scale * 2) * Math.cos(z * scale * 2) * 0.5
+    ) * this.heightScale;
     return height;
   }
 } 

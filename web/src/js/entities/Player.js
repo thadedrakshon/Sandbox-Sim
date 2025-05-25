@@ -84,7 +84,11 @@ export class Player {
     this.model.add(this.rightLeg);
     
     this.scene.add(this.model);
+    
+    // Set initial position
     this.model.position.set(0, 0, 0);
+    const terrainHeight = this.terrainGenerator.getHeightAt(0, 0);
+    this.model.position.y = terrainHeight;
     
     // Create target indicator
     const targetGeometry = new THREE.RingGeometry(0.5, 0.7, 32);
