@@ -257,14 +257,7 @@ export class Player {
   
   update(delta) {
     if (this.targetEnemy) {
-      // Update target position to follow enemy
-      this.targetPosition = new THREE.Vector3(
-        this.targetEnemy.model.position.x,
-        0,
-        this.targetEnemy.model.position.z
-      );
-      
-      // Check if enemy is dead
+      // Check if enemy is dead first
       if (this.targetEnemy.health <= 0) {
         this.targetEnemy = null;
         this.targetPosition = null;
@@ -272,6 +265,18 @@ export class Player {
         this.isWalking = false;
         return;
       }
+      
+      // Continuously update target position to follow enemy
+      this.targetPosition = new THREE.Vector3(
+        this.targetEnemy.model.position.x,
+        0,
+        this.targetEnemy.model.position.z
+      );
+      
+      // Update target indicator position to follow enemy
+      this.targetIndicator.position.copy(this.targetPosition);
+      this.targetIndicator.position.y = 0.1;
+      this.targetIndicator.visible = true;
     }
     
     if (this.targetPosition) {
@@ -279,33 +284,47 @@ export class Player {
         .subVectors(this.targetPosition, this.model.position)
         .normalize();
       
-      const moveVector = direction.multiplyScalar(this.moveSpeed * delta);
-      
       // Calculate distance to target
       const distanceToTarget = this.model.position.distanceTo(this.targetPosition);
       
-      // If targeting an enemy, stop at attack range
-      if (this.targetEnemy && distanceToTarget <= this.attackRange) {
-        this.isWalking = false;
-        this.attack();
-      } else {
-        // Only move if we're not at the target position
-        if (distanceToTarget > 0.1) {
+      // If targeting an enemy, move to attack range and attack
+      if (this.targetEnemy) {
+        if (distanceToTarget > this.attackRange) {
+          // Move toward enemy
+          const moveVector = direction.multiplyScalar(this.moveSpeed * delta);
           this.model.position.add(moveVector);
           this.isWalking = true;
+          
+          // Update rotation to face enemy
+          const targetRotation = Math.atan2(moveVector.x, moveVector.z);
+          this.model.rotation.y = targetRotation;
+        } else {
+          // In attack range - stop moving and attack
+          this.isWalking = false;
+          this.attack();
+          
+          // Face the enemy
+          const enemyDirection = new THREE.Vector3()
+            .subVectors(this.targetEnemy.model.position, this.model.position)
+            .normalize();
+          const targetRotation = Math.atan2(enemyDirection.x, enemyDirection.z);
+          this.model.rotation.y = targetRotation;
+        }
+      } else {
+        // Regular movement to a position
+        if (distanceToTarget > 0.1) {
+          const moveVector = direction.multiplyScalar(this.moveSpeed * delta);
+          this.model.position.add(moveVector);
+          this.isWalking = true;
+          
+          // Update rotation to face movement direction
+          const targetRotation = Math.atan2(moveVector.x, moveVector.z);
+          this.model.rotation.y = targetRotation;
         } else {
           this.isWalking = false;
-          if (!this.targetEnemy) {
-            this.targetPosition = null;
-            this.targetIndicator.visible = false;
-          }
+          this.targetPosition = null;
+          this.targetIndicator.visible = false;
         }
-      }
-      
-      // Update rotation to face movement direction
-      if (moveVector.length() > 0) {
-        const targetRotation = Math.atan2(moveVector.x, moveVector.z);
-        this.model.rotation.y = targetRotation;
       }
       
       if (this.terrainGenerator) {

@@ -47,65 +47,98 @@ export class NPC {
   }
   
   _init() {
-    // Create humanoid model
+    // Create humanoid model (smaller to match player size)
     this.model = new THREE.Group();
     
-    // Body
-    const bodyGeometry = new THREE.CapsuleGeometry(0.5, 1, 4, 8);
+    // Animation properties
+    this.isWalking = false;
+    this.walkCycle = 0;
+    this.walkSpeed = 10;
+    this.legAngle = 0;
+    this.armAngle = 0;
+    
+    // Body (smaller like player)
+    const bodyGeometry = new THREE.CapsuleGeometry(0.3, 0.8, 4, 8);
     const bodyMaterial = new THREE.MeshPhongMaterial({ 
       color: this.faction === 'yellow' ? 0xffff00 : 0x00ff00 
     });
-    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    body.position.y = 1.5;
-    this.model.add(body);
+    this.body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    this.body.position.y = 1.2;
+    this.model.add(this.body);
     
-    // Head
-    const headGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+    // Head (smaller like player)
+    const headGeometry = new THREE.SphereGeometry(0.25, 16, 16);
     const headMaterial = new THREE.MeshPhongMaterial({ 
       color: this.faction === 'yellow' ? 0xffff00 : 0x00ff00 
     });
-    const head = new THREE.Mesh(headGeometry, headMaterial);
-    head.position.y = 2.5;
-    this.model.add(head);
+    this.head = new THREE.Mesh(headGeometry, headMaterial);
+    this.head.position.y = 1.8;
+    this.model.add(this.head);
     
-    // Arms
-    const armGeometry = new THREE.CapsuleGeometry(0.2, 0.8, 4, 8);
+    // Arms (smaller like player)
+    const armGeometry = new THREE.CapsuleGeometry(0.1, 0.4, 4, 8);
     const armMaterial = new THREE.MeshPhongMaterial({ 
       color: this.faction === 'yellow' ? 0xffff00 : 0x00ff00 
     });
     
-    const leftArm = new THREE.Mesh(armGeometry, armMaterial);
-    leftArm.position.set(-0.7, 1.5, 0);
-    leftArm.rotation.z = Math.PI / 4;
-    this.model.add(leftArm);
+    this.leftArm = new THREE.Mesh(armGeometry, armMaterial);
+    this.leftArm.position.set(-0.4, 1.2, 0);
+    this.model.add(this.leftArm);
     
-    const rightArm = new THREE.Mesh(armGeometry, armMaterial);
-    rightArm.position.set(0.7, 1.5, 0);
-    rightArm.rotation.z = -Math.PI / 4;
-    this.model.add(rightArm);
+    this.rightArm = new THREE.Mesh(armGeometry, armMaterial);
+    this.rightArm.position.set(0.4, 1.2, 0);
+    this.model.add(this.rightArm);
     
-    // Legs
-    const legGeometry = new THREE.CapsuleGeometry(0.25, 0.8, 4, 8);
+    // Legs (smaller like player)
+    const legGeometry = new THREE.CapsuleGeometry(0.12, 0.5, 4, 8);
     const legMaterial = new THREE.MeshPhongMaterial({ 
       color: this.faction === 'yellow' ? 0xffff00 : 0x00ff00 
     });
     
-    const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
-    leftLeg.position.set(-0.3, 0.4, 0);
-    this.model.add(leftLeg);
+    this.leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+    this.leftLeg.position.set(-0.2, 0.5, 0);
+    this.model.add(this.leftLeg);
     
-    const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
-    rightLeg.position.set(0.3, 0.4, 0);
-    this.model.add(rightLeg);
+    this.rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+    this.rightLeg.position.set(0.2, 0.5, 0);
+    this.model.add(this.rightLeg);
     
     this.model.userData = { entity: this, isEnemy: true };
     this.scene.add(this.model);
     
     this.model.position.copy(this.position);
-    this.model.position.y = this.terrainGenerator.getHeightAt(this.position.x, this.position.z) + 1;
+    this.model.position.y = this.terrainGenerator.getHeightAt(this.position.x, this.position.z);
     
     // Create health bar
     this.uiManager.createNPCHealthBar(this);
+  }
+  
+  _updateWalkingAnimation(delta) {
+    if (this.isWalking) {
+      this.walkCycle += delta * this.walkSpeed;
+      
+      // Leg animation
+      this.legAngle = Math.sin(this.walkCycle) * 0.5;
+      this.leftLeg.rotation.x = this.legAngle;
+      this.rightLeg.rotation.x = -this.legAngle;
+      
+      // Arm animation (opposite to legs)
+      this.armAngle = Math.sin(this.walkCycle) * 0.3;
+      this.leftArm.rotation.x = -this.armAngle;
+      this.rightArm.rotation.x = this.armAngle;
+      
+      // Slight body bounce
+      this.body.position.y = 1.2 + Math.abs(Math.sin(this.walkCycle)) * 0.1;
+      this.head.position.y = 1.8 + Math.abs(Math.sin(this.walkCycle)) * 0.1;
+    } else {
+      // Reset to idle position
+      this.leftLeg.rotation.x = 0;
+      this.rightLeg.rotation.x = 0;
+      this.leftArm.rotation.x = 0;
+      this.rightArm.rotation.x = 0;
+      this.body.position.y = 1.2;
+      this.head.position.y = 1.8;
+    }
   }
   
   update(delta) {
@@ -120,18 +153,21 @@ export class NPC {
     
     switch (this.currentState) {
       case NPCState.IDLE:
+        this.isWalking = false;
         this.updateIdleState();
         break;
       case NPCState.ROAMING:
         this.updateRoamingState(delta);
         break;
       case NPCState.HUNGRY:
+        this.isWalking = false;
         this.updateHungryState();
         break;
       case NPCState.SEARCHING_FOOD:
         this.updateSearchingFoodState(delta);
         break;
       case NPCState.EATING:
+        this.isWalking = false;
         this.updateEatingState();
         break;
       case NPCState.COMBAT:
@@ -144,7 +180,10 @@ export class NPC {
     
     const terrainHeight = this.terrainGenerator.getHeightAt(this.position.x, this.position.z);
     this.model.position.copy(this.position);
-    this.model.position.y = terrainHeight + 1;
+    this.model.position.y = terrainHeight;
+    
+    // Update walking animation
+    this._updateWalkingAnimation(delta);
     
     // Update health bar
     this.uiManager.updateNPCHealthBar(this, this.health, this.maxHealth);
@@ -177,14 +216,18 @@ export class NPC {
     
     if (direction.length() > 0.1) {
       this.position.add(direction.multiplyScalar(this.moveSpeed * delta));
+      this.isWalking = true;
       
       this.model.lookAt(this.model.position.clone().add(direction));
+    } else {
+      this.isWalking = false;
     }
     
     const distanceToTarget = this.position.distanceTo(this.targetPosition);
     if (distanceToTarget < 1) {
       this.targetPosition = null;
       this.stateTime = 0;
+      this.isWalking = false;
       
       if (Math.random() < 0.5) {
         this.changeState(NPCState.IDLE);
@@ -252,7 +295,9 @@ export class NPC {
     
     if (distanceToEnemy > this.attackRange) {
       this.position.add(direction.multiplyScalar(this.moveSpeed * delta));
+      this.isWalking = true;
     } else {
+      this.isWalking = false;
       const now = performance.now() / 1000;
       if (now - this.lastAttackTime >= this.attackCooldown) {
         this.attack(this.targetEnemy);
@@ -278,6 +323,7 @@ export class NPC {
       .normalize();
     
     this.position.add(direction.multiplyScalar(this.moveSpeed * 1.5 * delta));
+    this.isWalking = true;
     
     if (this.stateTime >= 5) {
       this.changeState(NPCState.ROAMING);
