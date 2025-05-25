@@ -80,7 +80,7 @@ export class Game {
         0,
         Math.random() * 40 - 20
       );
-      const npc = new NPC(this.scene, this.terrain, position, 'yellow', this.uiManager);
+      const npc = new NPC(this.scene, this.terrain, { position, faction: 'yellow' }, this.uiManager);
       this.npcs.push(npc);
     }
     
@@ -91,7 +91,7 @@ export class Game {
         0,
         Math.random() * 40 - 20
       );
-      const npc = new NPC(this.scene, this.terrain, position, 'green', this.uiManager);
+      const npc = new NPC(this.scene, this.terrain, { position, faction: 'green' }, this.uiManager);
       this.npcs.push(npc);
     }
   }
