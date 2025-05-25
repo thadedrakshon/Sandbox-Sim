@@ -10,7 +10,8 @@ export class Game {
     this.scene.background = new THREE.Color(0x87CEEB); // Sky blue background
     
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera.position.set(0, 10, 10); // Position camera above and behind
+    this.camera.position.set(0, 15, 15); // Position camera higher and further back
+    this.camera.lookAt(0, 0, 0); // Look at the center of the scene
     
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
