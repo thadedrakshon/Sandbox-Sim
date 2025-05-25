@@ -5,8 +5,7 @@ export class TerrainGenerator {
     this.scene = scene;
     this.size = 100;
     this.resolution = 128;
-    this.heightScale = 5;
-    
+    this.heightScale = 0; // Flat terrain
     this.generateTerrain();
   }
   
@@ -18,18 +17,24 @@ export class TerrainGenerator {
       this.resolution
     );
     
-    // Generate height map
+    // Flat terrain: set all heights to 0
     const vertices = geometry.attributes.position.array;
     for (let i = 0; i < vertices.length; i += 3) {
-      const x = vertices[i];
-      const z = vertices[i + 2];
-      vertices[i + 1] = this.getHeightAt(x, z);
+      vertices[i + 1] = 0;
     }
     
     geometry.computeVertexNormals();
     
+    // Load grass texture
+    const textureLoader = new THREE.TextureLoader();
+    const grassTexture = textureLoader.load('./textures/grass.jpg');
+    grassTexture.wrapS = THREE.RepeatWrapping;
+    grassTexture.wrapT = THREE.RepeatWrapping;
+    grassTexture.repeat.set(20, 20);
+    
     const material = new THREE.MeshStandardMaterial({
-      color: 0x3a7e4f,
+      color: 0xffffff, // Use white to show texture
+      map: grassTexture,
       roughness: 0.8,
       metalness: 0.2,
       flatShading: false
@@ -43,12 +48,7 @@ export class TerrainGenerator {
   }
   
   getHeightAt(x, z) {
-    // More interesting terrain generation
-    const scale = 0.1;
-    const height = (
-      Math.sin(x * scale) * Math.cos(z * scale) +
-      Math.sin(x * scale * 2) * Math.cos(z * scale * 2) * 0.5
-    ) * this.heightScale;
-    return height;
+    // Flat terrain
+    return 0;
   }
 } 
